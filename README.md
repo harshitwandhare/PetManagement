@@ -37,8 +37,6 @@ A comprehensive React Native application for booking veterinary doctor appointme
    - Quick action buttons for each appointment
 
 2. **Schedule Management Screen**  
-   - Recurring availability patterns:
-     - Weekly/bi-weekly options
    - Daily time slot configuration:
      - Start/end times
    - Real-time updates reflected in pet owners' views
