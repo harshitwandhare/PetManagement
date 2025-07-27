@@ -11,7 +11,7 @@ import { getDoctors, saveDoctors } from '../services/doctors';
 
 interface DoctorsContextType {
   doctors: Doctor[];
-  addDoctor: (doctor: Omit<Doctor, 'id'>) => Promise<string>; // Returns new ID
+  addDoctor: (doctor: Omit<Doctor, 'id'>) => Promise<string>;
   updateDoctor: (
     id: string,
     updatedDoctor: Partial<Doctor>,
@@ -38,6 +38,7 @@ export const DoctorsProvider: React.FC<{ children: ReactNode }> = ({
       setIsLoading(true);
       setError(null);
       const loadedDoctors = await getDoctors();
+      console.log('DoctorsContext: Loaded doctors:', loadedDoctors);
       setDoctors(loadedDoctors);
     } catch (err) {
       setError(
@@ -47,7 +48,7 @@ export const DoctorsProvider: React.FC<{ children: ReactNode }> = ({
       setIsLoading(false);
     }
   }, []);
-  // In DoctorsProvider useEffect
+
   useEffect(() => {
     const initializeDoctors = async () => {
       try {
@@ -56,12 +57,15 @@ export const DoctorsProvider: React.FC<{ children: ReactNode }> = ({
 
         // Initialize with sample data if empty
         if (loadedDoctors.length === 0) {
-             const drEmail = 'doctor@test.com';
-          const drId = `doctor-${drEmail.replace(/[^a-zA-Z0-9]/g, '-').toLowerCase()}`; 
+          // Use consistent ID format that matches AuthContext
+          const drEmail = 'doctor@test.com';
+          const drId = `doctor-${drEmail.replace(/[^a-zA-Z0-9]/g, '-').toLowerCase()}`;
+
+          console.log('DoctorsContext: Creating sample doctor with ID:', drId);
 
           const sampleDoctors: Doctor[] = [
             {
-              id: drId,
+              id: drId, // This will be 'doctor-doctor-test-com'
               name: 'Dr. Harshit',
               specialization: ['general', 'skin'],
               location: 'Navi Mumbai',
@@ -70,7 +74,71 @@ export const DoctorsProvider: React.FC<{ children: ReactNode }> = ({
                 {
                   id: 'Monday-0900',
                   day: 'Monday',
-                  date: '',
+                  date: 'Monday', // Store day name for filtering
+                  startTime: '09:00',
+                  endTime: '10:00',
+                  isAvailable: true,
+                },
+                {
+                  id: 'Monday-1000',
+                  day: 'Monday',
+                  date: 'Monday',
+                  startTime: '10:00',
+                  endTime: '11:00',
+                  isAvailable: true,
+                },
+                {
+                  id: 'Monday-1100',
+                  day: 'Monday',
+                  date: 'Monday',
+                  startTime: '11:00',
+                  endTime: '12:00',
+                  isAvailable: true,
+                },
+                {
+                  id: 'Tuesday-0900',
+                  day: 'Tuesday',
+                  date: 'Tuesday',
+                  startTime: '09:00',
+                  endTime: '10:00',
+                  isAvailable: true,
+                },
+                {
+                  id: 'Tuesday-1000',
+                  day: 'Tuesday',
+                  date: 'Tuesday',
+                  startTime: '10:00',
+                  endTime: '11:00',
+                  isAvailable: true,
+                },
+                {
+                  id: 'Wednesday-0900',
+                  day: 'Wednesday',
+                  date: 'Wednesday',
+                  startTime: '09:00',
+                  endTime: '10:00',
+                  isAvailable: true,
+                },
+                {
+                  id: 'Wednesday-1000',
+                  day: 'Wednesday',
+                  date: 'Wednesday',
+                  startTime: '10:00',
+                  endTime: '11:00',
+                  isAvailable: true,
+                },
+                {
+                  id: 'Thursday-0900',
+                  day: 'Thursday',
+                  date: 'Thursday',
+                  startTime: '09:00',
+                  endTime: '10:00',
+                  isAvailable: true,
+                },
+                {
+                  id: 'Friday-0900',
+                  day: 'Friday',
+                  date: 'Friday',
                   startTime: '09:00',
                   endTime: '10:00',
                   isAvailable: true,
@@ -78,7 +146,7 @@ export const DoctorsProvider: React.FC<{ children: ReactNode }> = ({
               ],
             },
             {
-              id: '2',
+              id: 'doctor-2',
               name: 'Dr. Test',
               specialization: ['dental', 'behavioral'],
               location: 'Germany',
@@ -86,12 +154,16 @@ export const DoctorsProvider: React.FC<{ children: ReactNode }> = ({
               availableSlots: [],
             },
           ];
+          
+          console.log('DoctorsContext: Saving sample doctors:', sampleDoctors);
           await saveDoctors(sampleDoctors);
           loadedDoctors = sampleDoctors;
         }
 
+        console.log('DoctorsContext: Final doctors loaded:', loadedDoctors);
         setDoctors(loadedDoctors);
       } catch (err) {
+        console.error('DoctorsContext: Error initializing doctors:', err);
         setError(
           err instanceof Error ? err : new Error('Failed to load doctors'),
         );
@@ -109,7 +181,7 @@ export const DoctorsProvider: React.FC<{ children: ReactNode }> = ({
         setIsLoading(true);
         const newDoctor: Doctor = {
           ...doctor,
-          id: Date.now().toString(), // Generate ID on client
+          id: Date.now().toString(),
         };
         const updatedDoctors = [...doctors, newDoctor];
         await saveDoctors(updatedDoctors);
@@ -119,7 +191,7 @@ export const DoctorsProvider: React.FC<{ children: ReactNode }> = ({
         setError(
           err instanceof Error ? err : new Error('Failed to add doctor'),
         );
-        throw err; // Re-throw to let component handle
+        throw err;
       } finally {
         setIsLoading(false);
       }
@@ -130,14 +202,22 @@ export const DoctorsProvider: React.FC<{ children: ReactNode }> = ({
   const updateDoctor = useCallback(
     async (id: string, updates: Partial<Doctor>): Promise<boolean> => {
       try {
+        console.log('DoctorsContext: Updating doctor', id, 'with:', updates);
         setIsLoading(true);
+        
         const updatedDoctors = doctors.map(doctor =>
           doctor.id === id ? { ...doctor, ...updates } : doctor,
         );
+        
+        console.log('DoctorsContext: Updated doctors array:', updatedDoctors);
+        
         await saveDoctors(updatedDoctors);
         setDoctors(updatedDoctors);
+        
+        console.log('DoctorsContext: Successfully updated doctor');
         return true;
       } catch (err) {
+        console.error('DoctorsContext: Error updating doctor:', err);
         setError(
           err instanceof Error ? err : new Error('Failed to update doctor'),
         );
@@ -171,7 +251,9 @@ export const DoctorsProvider: React.FC<{ children: ReactNode }> = ({
 
   const getDoctorById = useCallback(
     (id: string) => {
-      return doctors.find(doctor => doctor.id === id);
+      const doctor = doctors.find(doctor => doctor.id === id);
+      console.log('DoctorsContext: Getting doctor by ID', id, ':', doctor);
+      return doctor;
     },
     [doctors],
   );

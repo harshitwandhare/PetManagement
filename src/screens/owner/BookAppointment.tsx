@@ -41,91 +41,124 @@ const BookAppointment: React.FC<BookAppointmentProps> = ({ route, navigation }) 
   const [loading, setLoading] = useState(false);
 
   const doctor = doctors.find(d => d.id === doctorId);
-
+const debugDateMapping = (selectedDate: string) => {
+  const date = new Date(selectedDate);
+  const dayNumber = date.getDay(); // 0 = Sunday, 1 = Monday, etc.
+  const dayNameLong = date.toLocaleDateString('en-US', { weekday: 'long' });
+  const dayNameShort = date.toLocaleDateString('en-US', { weekday: 'short' });
   
-  const handleBookAppointment = async () => {
-    if (!doctor || !selectedPetId || !selectedDate || !selectedSlot || !reason || !currentUser) {
-      Alert.alert('Error', 'Please fill all fields');
-      return;
+  console.log('Date Debug:', {
+    selectedDate,
+    dayNumber,
+    dayNameLong,
+    dayNameShort,
+    dateObject: date
+  });
+  
+  return dayNameLong;
+};
+  
+ const handleBookAppointment = async () => {
+  if (!doctor || !selectedPetId || !selectedDate || !selectedSlot || !reason || !currentUser) {
+    Alert.alert('Error', 'Please fill all fields');
+    return;
+  }
+
+  try {
+    setLoading(true);
+    
+    console.log('Booking appointment with:', {
+      doctorId: doctor.id,
+      ownerId: currentUser.id,
+      petId: selectedPetId,
+      date: selectedDate,
+      slot: selectedSlot,
+      reason
+    });
+    
+    // Create proper time slot format
+    const endTime = `${parseInt(selectedSlot.split(':')[0]) + 1}:00`;
+    const timeSlot = `${selectedSlot}-${endTime}`;
+
+    // Get pet details
+    const selectedPet = pets.find(p => p.id === selectedPetId);
+    if (!selectedPet) {
+      throw new Error('Selected pet not found');
     }
 
-    try {
-      setLoading(true);
-      
-      console.log('Booking appointment with:', {
-        doctorId: doctor.id,
-        ownerId: currentUser.id,
-        petId: selectedPetId,
-        date: selectedDate,
-        slot: selectedSlot,
-        reason
-      });
-      
-      // Create proper time slot format
-      const endTime = `${parseInt(selectedSlot.split(':')[0]) + 1}:00`;
-      const timeSlot = `${selectedSlot}-${endTime}`;
+    // Create appointment object
+    const appointmentData = {
+      doctorId: doctor.id,
+      doctorName: doctor.name,
+      petId: selectedPetId,
+      petName: selectedPet.name,
+      ownerId: currentUser.id,
+      ownerName: currentUser.name,
+      date: selectedDate,
+      time: timeSlot,
+      reason,
+      createdAt: new Date().toISOString(),
+    };
 
-      // Get pet details
-      const selectedPet = pets.find(p => p.id === selectedPetId);
-      if (!selectedPet) {
-        throw new Error('Selected pet not found');
+    console.log('Creating appointment with data:', appointmentData);
+
+    // Add appointment through context (this will handle storage)
+    const appointmentId = await addAppointment(appointmentData);
+    console.log('Successfully created appointment with ID:', appointmentId);
+
+    // FIXED: Better day name mapping with explicit debugging
+    const dayName = debugDateMapping(selectedDate);
+    console.log('Mapped day name:', dayName);
+    console.log('Available doctor slots:', doctor.availableSlots);
+    
+    // Find matching slots with detailed logging
+    const matchingSlots = doctor.availableSlots.filter(slot => {
+      const matches = slot.day === dayName && slot.startTime === selectedSlot;
+      console.log(`Slot check: ${slot.day} === ${dayName} && ${slot.startTime} === ${selectedSlot} = ${matches}`);
+      return matches;
+    });
+    
+    console.log('Found matching slots:', matchingSlots);
+    
+    if (matchingSlots.length === 0) {
+      console.warn('No matching slots found! This might indicate a mapping issue.');
+      console.log('All doctor slots:', doctor.availableSlots.map(s => `${s.day} ${s.startTime}`));
+    }
+    
+    // Update doctor's availability
+    const updatedSlots = doctor.availableSlots.map(slot => {
+      const shouldUpdate = slot.day === dayName && slot.startTime === selectedSlot;
+      console.log(`Updating slot: ${slot.day} ${slot.startTime}, should update: ${shouldUpdate}`);
+      return shouldUpdate ? { ...slot, isAvailable: false } : slot;
+    });
+    
+    console.log('Updated slots:', updatedSlots);
+    
+    await updateDoctor(doctor.id, {
+      availableSlots: updatedSlots
+    });
+
+    // Refresh data to ensure consistency
+    console.log('Refreshing appointments and doctors data...');
+    await Promise.all([
+      refreshAppointments(),
+      refreshDoctors(),
+    ]);
+
+    Alert.alert('Success', 'Appointment booked successfully!', [
+      {
+        text: 'OK',
+        onPress: () => navigation.navigate('MyAppointments')
       }
-
-      // Create appointment object
-      const appointmentData = {
-        doctorId: doctor.id,
-        doctorName: doctor.name,
-        petId: selectedPetId,
-        petName: selectedPet.name,
-        ownerId: currentUser.id,
-        ownerName: currentUser.name,
-        date: selectedDate,
-        time: timeSlot,
-        reason,
-        createdAt: new Date().toISOString(),
-      };
-
-      console.log('Creating appointment with data:', appointmentData);
-
-      // Add appointment through context (this will handle storage)
-      const appointmentId = await addAppointment(appointmentData);
-      console.log('Successfully created appointment with ID:', appointmentId);
-
-      // Update doctor's availability
-      const dayName = new Date(selectedDate).toLocaleDateString('en-US', { weekday: 'long' });
-      console.log('Updating doctor availability for day:', dayName, 'slot:', selectedSlot);
-      
-      const updatedSlots = doctor.availableSlots.map(slot => 
-        slot.day === dayName && slot.startTime === selectedSlot
-          ? { ...slot, isAvailable: false }
-          : slot
-      );
-      
-      await updateDoctor(doctor.id, {
-        availableSlots: updatedSlots
-      });
-
-      // Refresh data to ensure consistency
-      console.log('Refreshing appointments and doctors data...');
-      await Promise.all([
-        refreshAppointments(),
-        refreshDoctors(),
-      ]);
-
-      Alert.alert('Success', 'Appointment booked successfully!', [
-        {
-          text: 'OK',
-          onPress: () => navigation.navigate('MyAppointments')
-        }
-      ]);
-      
-    } catch (error) {
-      console.error('Error booking appointment:', error);
-      Alert.alert('Error', error instanceof Error ? error.message : 'Failed to book appointment');
-    } finally {
-      setLoading(false);
-    }
-  };
+    ]);
+    
+  } catch (error) {
+    console.error('Error booking appointment:', error);
+    Alert.alert('Error', error instanceof Error ? error.message : 'Failed to book appointment');
+  } finally {
+    setLoading(false);
+  }
+};
 
   // Handle loading states
   if (petsLoading) {

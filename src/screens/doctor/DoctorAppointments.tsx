@@ -13,6 +13,7 @@ import AppointmentCard from '../../components/appointment/AppointmentCard';
 import { useAppointments } from '../../context/AppointmentsContext';
 import { useAuth } from '../../context/AuthContext';
 import { useFocusEffect } from '@react-navigation/native';
+// import DoctorsDebug from './Debug';
 
 const DoctorAppointments = () => {
   const { 
@@ -160,8 +161,9 @@ const DoctorAppointments = () => {
         <Text style={styles.debugText}>
           My appointments: {appointments.length}
         </Text>
+       
       </View>
-      
+       {/* <DoctorsDebug /> */}
       <View style={styles.summaryContainer}>
         <Text style={styles.summaryText}>
           {upcomingAppointments.length} upcoming, {pastAppointments.length} past

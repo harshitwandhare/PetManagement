@@ -10,18 +10,23 @@ export const getAppointments = async (): Promise<Appointment[]> => {
     console.log('Retrieved appointments from storage:', appointments);
     
     if (!appointments || appointments.length === 0) {
-      // Initialize with sample data if empty
+      // Initialize with sample data if empty - using consistent doctor ID
+      const drEmail = 'doctor@test.com';
+      const drId = `doctor-${drEmail.replace(/[^a-zA-Z0-9]/g, '-').toLowerCase()}`;
+      
+      console.log('Appointments Service: Creating sample appointment for doctor ID:', drId);
+      
       const sampleAppointments: Appointment[] = [
         {
           id: 'apt-sample-1',
-          doctorId: 'doctor-test-example-com',
-          doctorName: 'Dr. Harsit',
+          doctorId: drId, // This matches the doctor ID from DoctorsContext
+          doctorName: 'Dr. Harshit',
           ownerId: 'owner-john-example-com',
           ownerName: 'John Doe',
           petId: 'pet-1',
           petName: 'Buddy',
           date: new Date(Date.now() + 86400000).toISOString().split('T')[0], // Tomorrow
-          time: '09:00-10:00',
+          time: '10:00-11:00', // Consistent time format
           reason: 'Annual checkup',
           status: 'upcoming',
           createdAt: new Date().toISOString()
@@ -47,13 +52,16 @@ export const addAppointment = async (appointment: Appointment): Promise<boolean>
     
     const appointments = await getAppointments();
     
-    // Check for duplicates
-    const isDuplicate = appointments.some(apt => 
-      apt.doctorId === appointment.doctorId &&
-      apt.date === appointment.date &&
-      apt.time === appointment.time &&
-      apt.status !== 'cancelled'
-    );
+    // Check for duplicates - handle both time formats
+    const isDuplicate = appointments.some(apt => {
+      const aptStartTime = apt.time.includes('-') ? apt.time.split('-')[0] : apt.time;
+      const newStartTime = appointment.time.includes('-') ? appointment.time.split('-')[0] : appointment.time;
+      
+      return apt.doctorId === appointment.doctorId &&
+        apt.date === appointment.date &&
+        aptStartTime === newStartTime &&
+        apt.status !== 'cancelled';
+    });
     
     if (isDuplicate) {
       console.error('Duplicate appointment detected');

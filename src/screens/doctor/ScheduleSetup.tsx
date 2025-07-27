@@ -26,7 +26,7 @@ interface ScheduleSetupProps {
 }
 
 const ScheduleSetup = ({ navigation }: ScheduleSetupProps) => {
-  const { doctors, updateDoctor } = useDoctors();
+  const { doctors, updateDoctor, refreshDoctors } = useDoctors();
   const [selectedDays, setSelectedDays] = useState<string[]>([]);
   const [selectedSlots, setSelectedSlots] = useState<Record<string, string[]>>({});
   const [specializations, setSpecializations] = useState<Specialization[]>([]);
@@ -35,30 +35,41 @@ const ScheduleSetup = ({ navigation }: ScheduleSetupProps) => {
   const [saveError, setSaveError] = useState<string | null>(null);
 
   // Get current doctor or initialize with default
-const currentDoctor = useMemo(() => {
-  return doctors[0] || {
-    id: '1',
-    name: 'Dr. Harshit',
-    specialization: [],
-    location: 'Navi Mumbai',
-    rating: 4.5,
-    availableSlots: [],
-  };
-}, [doctors]);
+  const currentDoctor = useMemo(() => {
+    const doctor = doctors[0] || {
+      id: '1',
+      name: 'Dr. Harshit',
+      specialization: [],
+      location: 'Navi Mumbai',
+      rating: 4.5,
+      availableSlots: [],
+    };
+    
+    console.log('ScheduleSetup: Current doctor:', doctor);
+    console.log('ScheduleSetup: Doctor slots:', doctor.availableSlots);
+    
+    return doctor;
+  }, [doctors]);
 
   // Initialize with doctor's existing schedule
   useEffect(() => {
     if (currentDoctor) {
+      console.log('ScheduleSetup: Initializing with doctor data:', currentDoctor);
+      
       setSpecializations(currentDoctor.specialization);
       
       // Group existing slots by day
       const slotsByDay: Record<string, string[]> = {};
       currentDoctor.availableSlots.forEach(slot => {
+        console.log('ScheduleSetup: Processing slot:', slot);
         if (!slotsByDay[slot.day]) {
           slotsByDay[slot.day] = [];
         }
         slotsByDay[slot.day].push(slot.startTime);
       });
+      
+      console.log('ScheduleSetup: Grouped slots by day:', slotsByDay);
+      console.log('ScheduleSetup: Days with slots:', Object.keys(slotsByDay));
       
       setSelectedSlots(slotsByDay);
       setSelectedDays(Object.keys(slotsByDay));
@@ -66,9 +77,12 @@ const currentDoctor = useMemo(() => {
   }, [currentDoctor]);
 
   const toggleDay = (day: string) => {
-    setSelectedDays(prev =>
-      prev.includes(day) ? prev.filter(d => d !== day) : [...prev, day]
-    );
+    console.log('ScheduleSetup: Toggling day:', day);
+    setSelectedDays(prev => {
+      const newDays = prev.includes(day) ? prev.filter(d => d !== day) : [...prev, day];
+      console.log('ScheduleSetup: New selected days:', newDays);
+      return newDays;
+    });
   };
 
   const toggleSpecialization = (spec: Specialization) => {
@@ -77,36 +91,73 @@ const currentDoctor = useMemo(() => {
     );
   };
 
- const handleSave = async () => {
-  try {
-    setIsSaving(true);
-    setSaveError(null);
-    
-    // Create slots with proper structure
-    const slots = selectedDays.flatMap(day => 
-      (selectedSlots[day] || []).map(time => ({
-        id: `${day}-${time.replace(':', '')}`,
-        day,
-        date: day, // Store the day name for filtering
-        startTime: time,
-        endTime: `${parseInt(time.split(':')[0]) + 1}:00`,
-        isAvailable: true,
-      }))
-    );
+  const handleSave = async () => {
+    try {
+      setIsSaving(true);
+      setSaveError(null);
+      
+      console.log('ScheduleSetup: Starting save process...');
+      console.log('ScheduleSetup: Selected days:', selectedDays);
+      console.log('ScheduleSetup: Selected slots:', selectedSlots);
+      
+      // Create slots with proper structure
+      const slots = selectedDays.flatMap(day => {
+        const daySlots = selectedSlots[day] || [];
+        console.log(`ScheduleSetup: Creating slots for ${day}:`, daySlots);
+        
+        return daySlots.map(time => {
+          const slot = {
+            id: `${day}-${time.replace(':', '')}`,
+            day,
+            date: day, // Store the day name for filtering
+            startTime: time,
+            endTime: `${String(parseInt(time.split(':')[0]) + 1).padStart(2, '0')}:00`,
+            isAvailable: true,
+          };
+          console.log(`ScheduleSetup: Created slot:`, slot);
+          return slot;
+        });
+      });
 
-    await updateDoctor(currentDoctor.id, {
-      specialization: specializations,
-      availableSlots: slots,
-    });
-    
-    setSaveSuccess(true);
-    setTimeout(() => navigation.goBack(), 2000);
-  } catch (error) {
-    setSaveError(error instanceof Error ? error.message : 'Failed to save schedule');
-  } finally {
-    setIsSaving(false);
-  }
-};
+      console.log('ScheduleSetup: All created slots:', slots);
+      console.log('ScheduleSetup: Monday slots:', slots.filter(s => s.day === 'Monday'));
+
+      const updateData = {
+        specialization: specializations,
+        availableSlots: slots,
+      };
+      
+      console.log('ScheduleSetup: Updating doctor with data:', updateData);
+
+      const success = await updateDoctor(currentDoctor.id, updateData);
+      
+      if (!success) {
+        throw new Error('Failed to update doctor');
+      }
+      
+      console.log('ScheduleSetup: Update successful, refreshing doctors...');
+      
+      // Force refresh to ensure we have the latest data
+      await refreshDoctors();
+      
+      console.log('ScheduleSetup: Refresh complete');
+      
+      setSaveSuccess(true);
+      setTimeout(() => navigation.goBack(), 2000);
+    } catch (error) {
+      console.error('ScheduleSetup: Save error:', error);
+      setSaveError(error instanceof Error ? error.message : 'Failed to save schedule');
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  // Debug current state
+  const mondaySlots = selectedSlots['Monday'] || [];
+  const currentMondaySlots = currentDoctor.availableSlots.filter(s => s.day === 'Monday');
+  
+  console.log('ScheduleSetup: Current Monday slots in selectedSlots:', mondaySlots);
+  console.log('ScheduleSetup: Current Monday slots in doctor data:', currentMondaySlots);
 
   return (
     <ScrollView 
@@ -131,6 +182,19 @@ const currentDoctor = useMemo(() => {
           <Text style={styles.feedbackText}>{saveError}</Text>
         </View>
       )}
+
+      {/* Enhanced Debug Section */}
+      <View style={styles.debugContainer}>
+        <Text style={styles.debugTitle}>Debug Information</Text>
+        <Text style={styles.debugText}>Doctor ID: {currentDoctor.id}</Text>
+        <Text style={styles.debugText}>Total doctors: {doctors.length}</Text>
+        <Text style={styles.debugText}>Selected days: {selectedDays.join(', ')}</Text>
+        <Text style={styles.debugText}>Monday selected: {selectedDays.includes('Monday') ? 'Yes' : 'No'}</Text>
+        <Text style={styles.debugText}>Monday slots count: {mondaySlots.length}</Text>
+        <Text style={styles.debugText}>Monday slots: {mondaySlots.join(', ')}</Text>
+        <Text style={styles.debugText}>Doctor Monday slots: {currentMondaySlots.length}</Text>
+        <Text style={styles.debugText}>Total doctor slots: {currentDoctor.availableSlots.length}</Text>
+      </View>
 
       <Text style={[globalStyles.title, styles.title]}>Set Up Your Schedule</Text>
       
@@ -167,9 +231,14 @@ const currentDoctor = useMemo(() => {
           key={day}
           day={day}
           selectedSlots={selectedSlots[day] || []}
-          onSlotsChange={(slots) => 
-            setSelectedSlots(prev => ({ ...prev, [day]: slots }))
-          }
+          onSlotsChange={(slots) => {
+            console.log(`ScheduleSetup: TimeSlotPicker changed slots for ${day}:`, slots);
+            setSelectedSlots(prev => {
+              const updated = { ...prev, [day]: slots };
+              console.log('ScheduleSetup: Updated selectedSlots:', updated);
+              return updated;
+            });
+          }}
         />
       ))}
 
@@ -205,6 +274,25 @@ const styles = StyleSheet.create({
   },
   feedbackText: {
     fontSize: 14,
+  },
+  debugContainer: {
+    backgroundColor: '#e3f2fd',
+    padding: 12,
+    borderRadius: 8,
+    marginBottom: 16,
+    borderWidth: 1,
+    borderColor: '#2196F3',
+  },
+  debugTitle: {
+    fontSize: 14,
+    fontWeight: 'bold',
+    color: '#1976D2',
+    marginBottom: 8,
+  },
+  debugText: {
+    fontSize: 12,
+    color: '#1976D2',
+    marginBottom: 2,
   },
   container: {
     backgroundColor: '#F8F9FA',
