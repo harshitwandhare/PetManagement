@@ -1,8 +1,8 @@
+// components/appointment/AppointmentCard.tsx
 import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Alert } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { Appointment } from '../../types/appointment';
 import { globalStyles } from '../../constants/styles';
-import { useAppointments } from '../../context/AppointmentsContext';
 
 interface AppointmentCardProps {
   appointment: Appointment;
@@ -11,42 +11,12 @@ interface AppointmentCardProps {
 }
 
 const AppointmentCard: React.FC<AppointmentCardProps> = ({ appointment, view, onPress }) => {
-  const { cancelAppointment } = useAppointments();
-  
   console.log('Rendering AppointmentCard:', appointment, view);
   const statusColor = {
     upcoming: '#FFA500',
     completed: '#4CAF50',
     cancelled: '#F44336'
   }[appointment.status];
-
-  const handleCancel = async () => {
-    Alert.alert(
-      'Cancel Appointment',
-      'Are you sure you want to cancel this appointment?',
-      [
-        {
-          text: 'No',
-          style: 'cancel',
-        },
-        {
-          text: 'Yes',
-          onPress: async () => {
-            try {
-              const success = await cancelAppointment(appointment.id);
-              if (success) {
-                Alert.alert('Success', 'Appointment has been cancelled');
-              } else {
-                Alert.alert('Error', 'Failed to cancel appointment');
-              }
-            } catch (error) {
-              Alert.alert('Error', error instanceof Error ? error.message : 'Failed to cancel appointment');
-            }
-          },
-        },
-      ]
-    );
-  };
 
   return (
     <TouchableOpacity 
@@ -73,19 +43,8 @@ const AppointmentCard: React.FC<AppointmentCardProps> = ({ appointment, view, on
       
       <Text style={styles.reason}>{appointment.reason}</Text>
       
-      <View style={styles.bottomRow}>
-        <View style={[styles.statusBadge, { backgroundColor: statusColor }]}>
-          <Text style={styles.statusText}>{appointment.status.toUpperCase()}</Text>
-        </View>
-        
-        {appointment.status === 'upcoming' && (
-          <TouchableOpacity 
-            style={styles.cancelButton}
-            onPress={handleCancel}
-          >
-            <Text style={styles.cancelButtonText}>Cancel</Text>
-          </TouchableOpacity>
-        )}
+      <View style={[styles.statusBadge, { backgroundColor: statusColor }]}>
+        <Text style={styles.statusText}>{appointment.status.toUpperCase()}</Text>
       </View>
     </TouchableOpacity>
   );
@@ -121,6 +80,7 @@ const styles = StyleSheet.create({
     color: '#333',
   },
   statusBadge: {
+    alignSelf: 'flex-start',
     paddingVertical: 4,
     paddingHorizontal: 8,
     borderRadius: 12,
@@ -129,22 +89,6 @@ const styles = StyleSheet.create({
     color: 'white',
     fontSize: 12,
     fontWeight: 'bold',
-  },
-  bottomRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  cancelButton: {
-    backgroundColor: '#F44336',
-    paddingVertical: 6,
-    paddingHorizontal: 12,
-    borderRadius: 6,
-  },
-  cancelButtonText: {
-    color: 'white',
-    fontSize: 14,
-    fontWeight: '500',
   },
 });
 

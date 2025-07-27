@@ -1,6 +1,8 @@
 import React from 'react';
-import { View, Text, Modal, FlatList, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, Modal, FlatList, TouchableOpacity, StyleSheet, Button } from 'react-native';
+import { globalStyles } from '../../constants/styles';
 import { Specialization } from '../../types/doctor';
+
 
 interface FilterModalProps {
   visible: boolean;
@@ -26,7 +28,7 @@ const FilterModal = ({
     >
       <View style={styles.modalContainer}>
         <View style={styles.modalContent}>
-          <Text style={styles.modalTitle}>Filter by Specialization</Text>
+          <Text style={globalStyles.title}>Filter by Specialization</Text>
           
           <FlatList
             data={specializations}
@@ -43,20 +45,13 @@ const FilterModal = ({
                   )
                 }
               >
-                <Text style={selectedSpecialization === item ? styles.selectedFilterText : styles.filterText}>
-                  {item}
-                </Text>
+                <Text>{item}</Text>
               </TouchableOpacity>
             )}
           />
 
-          <View style={styles.buttonContainer}>
-            <TouchableOpacity 
-              style={styles.applyButton}
-              onPress={onClose}
-            >
-              <Text style={styles.buttonText}>Apply Filters</Text>
-            </TouchableOpacity>
+          <View style={globalStyles.button}>
+            <Button title="Apply Filters" onPress={onClose} color="white" />
           </View>
         </View>
       </View>
@@ -69,59 +64,21 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: 'rgba(0,0,0,0.4)',
+    backgroundColor: 'rgba(0,0,0,0.5)',
   },
   modalContent: {
-    width: '85%',
-    maxHeight: '70%',
-    backgroundColor: '#ffffff',
+    width: '80%',
+    backgroundColor: 'white',
     padding: 20,
-    borderRadius: 12,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 4,
-    elevation: 5,
-  },
-  modalTitle: {
-    fontSize: 20,
-    fontWeight: '600',
-    color: '#2c3e50',
-    marginBottom: 20,
-    textAlign: 'center',
+    borderRadius: 8,
   },
   filterItem: {
-    padding: 15,
+    padding: 12,
     borderBottomWidth: 1,
-    borderBottomColor: '#ecf0f1',
+    borderBottomColor: '#eee',
   },
   selectedFilterItem: {
-    backgroundColor: '#e3f2fd',
-    borderLeftWidth: 4,
-    borderLeftColor: '#2196f3',
-  },
-  filterText: {
-    fontSize: 16,
-    color: '#34495e',
-  },
-  selectedFilterText: {
-    fontSize: 16,
-    color: '#2196f3',
-    fontWeight: '500',
-  },
-  buttonContainer: {
-    marginTop: 20,
-  },
-  applyButton: {
-    backgroundColor: '#2196f3',
-    padding: 12,
-    borderRadius: 8,
-    alignItems: 'center',
-  },
-  buttonText: {
-    color: 'white',
-    fontSize: 16,
-    fontWeight: '500',
+    backgroundColor: '#e6f2ff',
   },
 });
 
