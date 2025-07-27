@@ -82,37 +82,45 @@ A comprehensive React Native application for booking veterinary doctor appointme
    ```
 
 2. **Install dependencies**
-   
-   Using npm
+
+   ```sh
+   # Using npm
    npm install
 
-   OR using Yarn
+   # OR using Yarn
    yarn install
 
-   Install iOS dependencies (macOS only)
+   # Install iOS dependencies (macOS only)
    cd ios && pod install && cd ..
 
+   ```
+
+
 4. **Running the App**
-   
-   Start Metro Bundler
-   Using npm
+
+   ```sh
+   # Start Metro Bundler
+   # Using npm
    npm start
 
-   OR using Yarn
+   # OR using Yarn
    yarn start
 
-   Run on Android
-   Using npm
+   # Run on Android
+   # Using npm
    npm run android
 
-   OR using Yarn
+   # OR using Yarn
    yarn android
 
-   Run on ios
-   Using npm
+   # Run on ios
+   # Using npm
    npm run ios
 
-   OR using Yarn
+   #OR using Yarn
    yarn ios
+
+
+   ```
 
 
