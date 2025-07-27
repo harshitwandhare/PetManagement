@@ -26,7 +26,7 @@ interface MyAppointmentsProps {
   navigation: MyAppointmentsNavigationProp;
 }
 
-const MyAppointments: React.FC<MyAppointmentsProps> = ({ navigation }) => {
+const MyAppointments: React.FC<MyAppointmentsProps> = ({  }) => {
   const { 
     getAppointmentsByOwner, 
     refreshAppointments, 
@@ -240,7 +240,6 @@ const MyAppointments: React.FC<MyAppointmentsProps> = ({ navigation }) => {
           <AppointmentCard 
             appointment={item} 
             view="owner" 
-            onPress={() => navigation.navigate('BookAppointment', { doctorId: item.doctorId })}
           />
         )}
         contentContainerStyle={styles.listContent}
