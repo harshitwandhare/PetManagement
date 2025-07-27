@@ -6,6 +6,7 @@ import {
   updateAppointment as apiUpdateAppointment,
   cancelAppointment as apiCancelAppointment
 } from '../services/appointments';
+import { useDoctors } from './DoctorsContext';
 
 interface AppointmentsContextType {
   appointments: Appointment[];
@@ -28,6 +29,7 @@ export const AppointmentsProvider: React.FC<{ children: ReactNode }> = ({ childr
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
+const { updateDoctor, doctors } = useDoctors(); 
 
   const refreshAppointments = useCallback(async () => {
     try {
@@ -126,18 +128,48 @@ export const AppointmentsProvider: React.FC<{ children: ReactNode }> = ({ childr
     }
   }, []);
 
-  const cancelAppointment = useCallback(async (id: string): Promise<boolean> => {
+ const cancelAppointment = useCallback(async (id: string): Promise<boolean> => {
     try {
       setIsLoading(true);
       setError(null);
       
+      // Find the appointment being cancelled
+      const appointment = appointments.find(app => app.id === id);
+      if (!appointment) {
+        throw new Error('Appointment not found');
+      }
+
+      // Find the doctor for this appointment
+      const doctor = doctors.find(d => d.id === appointment.doctorId);
+      if (!doctor) {
+        throw new Error('Doctor not found');
+      }
+
+      // Parse the time slot (format: "09:00-10:00")
+      const [startTime] = appointment.time.split('-');
+      const dayName = new Date(appointment.date).toLocaleDateString('en-US', { weekday: 'long' });
+
+      // Update the doctor's available slots
+      const updatedSlots = doctor.availableSlots.map(slot => {
+        if (slot.day === dayName && slot.startTime === startTime) {
+          return { ...slot, isAvailable: true };
+        }
+        return slot;
+      });
+
+      // First update the doctor's availability
+      await updateDoctor(doctor.id, {
+        availableSlots: updatedSlots
+      });
+
+      // Then cancel the appointment
       console.log('Cancelling appointment:', id);
-      
       const success = await apiCancelAppointment(id);
       if (!success) {
         throw new Error('Failed to cancel appointment');
       }
       
+      // Update local state
       setAppointments(prev => {
         const updated = prev.map(app => 
           app.id === id ? { ...app, status: 'cancelled' as AppointmentStatus } : app
@@ -154,7 +186,8 @@ export const AppointmentsProvider: React.FC<{ children: ReactNode }> = ({ childr
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [appointments, doctors, updateDoctor]);
+
 
   const rescheduleAppointment = useCallback(async (
     id: string,

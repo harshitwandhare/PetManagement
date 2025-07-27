@@ -1,97 +1,118 @@
-This is a new [**React Native**](https://reactnative.dev) project, bootstrapped using [`@react-native-community/cli`](https://github.com/react-native-community/cli).
+# Veterinary Doctor Appointment App
 
-# Getting Started
+A comprehensive React Native application for booking veterinary doctor appointments with features like appointment management, and doctor availability scheduling.
 
-> **Note**: Make sure you have completed the [Set Up Your Environment](https://reactnative.dev/docs/set-up-your-environment) guide before proceeding.
+## User Flow Walkthrough
 
-## Step 1: Start Metro
+### First Launch Experience
+1. **Login Screen**  
+   - Users land on authentication screen on first launch
+   - Quick login buttons for both pet owners and doctors (demo accounts)
+   - Role-based routing after authentication
 
-First, you will need to run **Metro**, the JavaScript build tool for React Native.
+### Pet Owner Flow
+1. **My Appointments Screen**  
+   - Displays upcoming and past appointments
+   - Each appointment shows:
+     - Doctor details
+     - Date/time
+     - Status (confirmed/completed/cancelled)
+   - Cancel option for upcoming appointments
 
-To start the Metro dev server, run the following command from the root of your React Native project:
+2. **Book Appointment Screen**  
+   - Real-time availability calendar showing:
+     - Available dates (highlighted)
+     - Time slots (updated dynamically)
+   - Doctor filtering by:
+     - Specialization
+   - Multi-step booking process:
+     1. Select doctor
+     2. Choose available slot
+     3. Confirm details
 
-```sh
-# Using npm
-npm start
+### Doctor Flow
+1. **My Appointments Screen**  
+   - Schedule view of all appointments
+   - Color-coded by status (pending/confirmed/completed)
+   - Quick action buttons for each appointment
 
-# OR using Yarn
-yarn start
-```
+2. **Schedule Management Screen**  
+   - Recurring availability patterns:
+     - Weekly/bi-weekly options
+   - Daily time slot configuration:
+     - Start/end times
+   - Real-time updates reflected in pet owners' views
 
-## Step 2: Build and run your app
+### Cancellation Flow (Both Roles)
+1. **Cancellation Process**  
+   - Single-tap cancellation from appointment details
+   - Confirmation dialog
+   - Immediate slot availability update:
+    - Freed slot reappears in booking system
 
-With Metro running, open a new terminal window/pane from the root of your React Native project, and use one of the following commands to build and run your Android or iOS app:
+### Key Optimizations
+- **Real-time Sync**: Appointment changes instantly update across all views
+- **Intelligent Caching**: Frequently accessed data stored locally for performance
+- **Role-specific UI**: Custom interfaces optimized for each user type
+- **State Persistence**: Maintains all data through app restarts
 
-### Android
 
-```sh
-# Using npm
-npm run android
+## Features
 
-# OR using Yarn
-yarn android
-```
+- **User Authentication**: Simple login for pet owners and doctors
+- **Appointment Booking**: Easy scheduling with available time slots
+- **Doctor Availability**: Custom schedules days and time slots
+- **Advanced Search**: Filter doctors by specialization
+- **Offline Support**: Persistent data storage for uninterrupted use
 
-### iOS
+## Prerequisites
 
-For iOS, remember to install CocoaPods dependencies (this only needs to be run on first clone or after updating native deps).
+- Node.js (v18 or newer)
+- npm or Yarn
+- React Native CLI
+- Android Studio/Xcode (for emulator/simulator)
+- Watchman (macOS only)
 
-The first time you create a new project, run the Ruby bundler to install CocoaPods itself:
+## Installation
 
-```sh
-bundle install
-```
+1. **Clone the repository**
 
-Then, and every time you update your native dependencies, run:
+   ```sh
+   git clone https://github.com/harshitwandhare/PetManagement
+   cd doctor-appointment-app
 
-```sh
-bundle exec pod install
-```
+   ```
 
-For more information, please visit [CocoaPods Getting Started guide](https://guides.cocoapods.org/using/getting-started.html).
+2. **Install dependencies**
+   Using npm
+   npm install
 
-```sh
-# Using npm
-npm run ios
+   OR using Yarn
+   yarn install
 
-# OR using Yarn
-yarn ios
-```
+   Install iOS dependencies (macOS only)
+   cd ios && pod install && cd ..
 
-If everything is set up correctly, you should see your new app running in the Android Emulator, iOS Simulator, or your connected device.
+   3. **Running the App**
+      Start Metro Bundler
+      Using npm
+      npm start
 
-This is one way to run your app — you can also build it directly from Android Studio or Xcode.
+      OR using Yarn
+      yarn start
 
-## Step 3: Modify your app
+      Run on Android
+      Using npm
+      npm run android
 
-Now that you have successfully run the app, let's make changes!
+      OR using Yarn
+      yarn android
 
-Open `App.tsx` in your text editor of choice and make some changes. When you save, your app will automatically update and reflect these changes — this is powered by [Fast Refresh](https://reactnative.dev/docs/fast-refresh).
+      Run on ios
+      Using npm
+      npm run ios
 
-When you want to forcefully reload, for example to reset the state of your app, you can perform a full reload:
+      OR using Yarn
+      yarn ios
 
-- **Android**: Press the <kbd>R</kbd> key twice or select **"Reload"** from the **Dev Menu**, accessed via <kbd>Ctrl</kbd> + <kbd>M</kbd> (Windows/Linux) or <kbd>Cmd ⌘</kbd> + <kbd>M</kbd> (macOS).
-- **iOS**: Press <kbd>R</kbd> in iOS Simulator.
 
-## Congratulations! :tada:
-
-You've successfully run and modified your React Native App. :partying_face:
-
-### Now what?
-
-- If you want to add this new React Native code to an existing application, check out the [Integration guide](https://reactnative.dev/docs/integration-with-existing-apps).
-- If you're curious to learn more about React Native, check out the [docs](https://reactnative.dev/docs/getting-started).
-
-# Troubleshooting
-
-If you're having issues getting the above steps to work, see the [Troubleshooting](https://reactnative.dev/docs/troubleshooting) page.
-
-# Learn More
-
-To learn more about React Native, take a look at the following resources:
-
-- [React Native Website](https://reactnative.dev) - learn more about React Native.
-- [Getting Started](https://reactnative.dev/docs/environment-setup) - an **overview** of React Native and how setup your environment.
-- [Learn the Basics](https://reactnative.dev/docs/getting-started) - a **guided tour** of the React Native **basics**.
-- [Blog](https://reactnative.dev/blog) - read the latest official React Native **Blog** posts.
-- [`@facebook/react-native`](https://github.com/facebook/react-native) - the Open Source; GitHub **repository** for React Native.
