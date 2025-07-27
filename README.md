@@ -92,6 +92,7 @@ A comprehensive React Native application for booking veterinary doctor appointme
    cd ios && pod install && cd ..
 
 3. **Running the App**
+   
    Start Metro Bundler
    Using npm
    npm start
