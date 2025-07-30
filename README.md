@@ -77,50 +77,53 @@ A comprehensive React Native application for booking veterinary doctor appointme
 
    ```sh
    git clone https://github.com/harshitwandhare/PetManagement
-   cd doctor-appointment-app
-
+   cd PetManagement
    ```
 
 2. **Install dependencies**
 
    ```sh
-   # Using npm
+   # using npm
    npm install
 
-   # OR using Yarn
+   # or using Yarn
    yarn install
-
-   # Install iOS dependencies (macOS only)
-   cd ios && pod install && cd ..
-
    ```
 
-
-4. **Running the App**
+3. **Install iOS dependencies (macOS only)**
 
    ```sh
-   # Start Metro Bundler
-   # Using npm
-   npm start
-
-   # OR using Yarn
-   yarn start
-
-   # Run on Android
-   # Using npm
-   npm run android
-
-   # OR using Yarn
-   yarn android
-
-   # Run on ios
-   # Using npm
-   npm run ios
-
-   #OR using Yarn
-   yarn ios
-
-
+   cd ios && pod install && cd ..
    ```
 
+## Running the App
+
+1. **Start the Metro bundler**
+
+   ```sh
+   npm start
+   # or
+   yarn start
+   ```
+
+2. **Run on a device/emulator**
+
+   ```sh
+   # Android
+   npm run android   # or: yarn android
+
+   # iOS (macOS only)
+   npm run ios       # or: yarn ios
+   ```
+
+## Tech stack
+
+- React Native
+- TypeScript
+- React Navigation
+- AsyncStorage for local persistence
+
+## License
+
+This project is released under the [MIT License](LICENSE).
 
